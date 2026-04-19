@@ -20,6 +20,26 @@
         "command": "cmake",
         "args": ["--build", "./build", "--target", "flash"]
       }
+    },
+    {
+      "type": "shell",
+      "label": "write_fuse",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "cmake",
+        "args": ["--build", "./build", "--target", "write_fuses"]
+      },
+      "linux": {
+        "sudo": true,
+        "command": "cmake",
+        "args": ["--build", "./build", "--target", "write_fuses"]
+      }
     }
   ]
 }

@@ -15,3 +15,4 @@ add_custom_target(upload_eeprom avrdude -c ${PROGRAMMER} -p ${MCU}  -U eeprom:w:
 # fuses
 add_custom_target(write_fuses avrdude -c ${PROGRAMMER} -p ${MCU} -U lfuse:w:${L_FUSE}:m -U hfuse:w:${H_FUSE}:m -U efuse:w:${E_FUSE}:m -U lock:w:${LOCK_BIT}:m)
 add_custom_target(read_fuses avrdude -c ${PROGRAMMER} -p ${MCU} -U hfuse:r:-:h -U lfuse:r:-:h -U efuse:r:-:h )
+add_custom_target(chip_erase avrdude -c ${PROGRAMMER} -p ${MCU} -e ) #useful in case you make a mistake like setting lock bits you were not suppose too
