@@ -1,7 +1,15 @@
 {
-  "cmake.generator": "Ninja"
-  // "cmake.configureSettings": {
-  //   "CMAKE_C_COMPILER": "",
-  //   "CMAKE_CXX_COMPILER": ""
-  // }
+  "cmake.generator": "Ninja",
+  "cmake.configureSettings": {
+    "CMAKE_C_COMPILER": "avr-gcc",
+    "CMAKE_CXX_COMPILER": "avr-g++"
+  },
+  "editor.formatOnSave": true,
+  "C_Cpp.clang_format_style": "file",
+  "[c]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  }
 }
