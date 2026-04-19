@@ -1,0 +1,7 @@
+{
+  "cmake.generator": "Ninja"
+  // "cmake.configureSettings": {
+  //   "CMAKE_C_COMPILER": "",
+  //   "CMAKE_CXX_COMPILER": ""
+  // }
+}

@@ -1,0 +1,45 @@
+# --- Build directories ---
+build/
+build-*/
+out/
+bin/
+obj/
+
+# --- CMake generated files ---
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+*.cmake.in
+*.ninja
+*.ninja_deps
+*.ninja_log
+
+# --- AVR GCC output ---
+*.elf
+*.hex
+*.eep
+*.map
+*.lss
+*.srec
+
+# --- Object files ---
+*.o
+*.obj
+
+# --- Dependency files ---
+*.d
+
+# --- Logs ---
+*.log
+
+# --- Editor / OS clutter ---
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# --- Backup files ---
+*~
+*.bak
