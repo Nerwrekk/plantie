@@ -100,16 +100,29 @@ void IO_InitUSART(void)
 	UCSR0C = 0x6;
 }
 
-uint8_t IO_USART_Receive(void)
+char IO_USART_Receive(void)
 {
-	return 0;
+	//Wait for incoming data
+	while ((UCSR0A & (1 << RXC0)) == 0);
+
+	return UDR0;
 }
 
-void IO_USART_Transmit(uint8_t data)
+void IO_USART_Transmit(char data)
 {
 	//Wait for empty transmit buffer
 	while ((UCSR0A & (1 << UDRE0)) == 0);
 
 	//Put data into buffer, sends the data
 	UDR0 = data;
+}
+
+void IO_USART_TransmitMsg(char* data)
+{
+	int indx = 0;
+	while (data[indx] != '\0')
+	{
+		IO_USART_Transmit(data[indx]);
+		++indx;
+	}
 }

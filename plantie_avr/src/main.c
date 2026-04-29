@@ -10,10 +10,18 @@ int main(void)
 	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 	for (;;)
 	{
-		IO_USART_Transmit('x');
-		// IO_USART_Transmit('e');
-		// IO_USART_Transmit('l');
-		// IO_USART_Transmit('o');
+		IO_USART_TransmitMsg("Ready to speak");
+
+		char data = IO_USART_Receive();
+		if (data == 'h')
+		{
+			IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
+		}
+
+		if (data == 'l')
+		{
+			IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
+		}
 	}
 
 	// DDRB        = (1 << PIN0);

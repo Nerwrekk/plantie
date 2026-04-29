@@ -86,7 +86,8 @@ io_input_e IO_GetInput(io_pin_e pin);
 
 //uart
 void IO_InitUSART(void);
-uint8_t IO_USART_Receive(void);
-void IO_USART_Transmit(uint8_t data);
+char IO_USART_Receive(void);
+void IO_USART_Transmit(char data);
+void IO_USART_TransmitMsg(char* data);
 
 #endif //PLANTIE_IO_H
