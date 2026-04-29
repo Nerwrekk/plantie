@@ -7,12 +7,13 @@ int main(void)
 {
 	IO_InitMcu();
 
+	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 	for (;;)
 	{
-		IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
-		_delay_ms(100);
-		IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
-		_delay_ms(100);
+		IO_USART_Transmit('x');
+		// IO_USART_Transmit('e');
+		// IO_USART_Transmit('l');
+		// IO_USART_Transmit('o');
 	}
 
 	// DDRB        = (1 << PIN0);

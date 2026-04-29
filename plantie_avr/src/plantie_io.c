@@ -34,6 +34,8 @@ void IO_InitMcu(void)
 	};
 
 	IO_ConfigurePin(IO_ERR_LED, &errLed);
+
+	IO_InitUSART();
 }
 
 void IO_ConfigurePin(io_pin_e pin, const io_config* config)
@@ -80,20 +82,22 @@ void IO_SetOutput(io_pin_e pin, io_output_e output)
 void IO_InitUSART(void)
 {
 	//Set the baudrate
-	//Set the baudrate to 9800 bps using external 20MHz RC Oscillator
+	//Set the baudrate to 9800 bps using external 20MHz RC Oscillator (see datasheet Table 21-4. Examples of UBRRn Settings for Commonly Used Oscillator Frequencies)
 	//UBRR0H and UBRR0L registers are a 16 bit register pair
 	///in case the baudrate register value is greater then 255, that means that the value is greater then 8 bits
 	//so by bit shifting 8 to the right we remove the first byte and focus on the second byte in the 16 bit value
 	UBRR0H = (BAUDERATE_9600 >> 8);
 	UBRR0L = BAUDERATE_9600; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
 
+	//Usart control and status register A
+	UCSR0A = 0x00;
+
 	//Enable receiver and transmitter
 	UCSR0B |= (1 << RXEN0);
 	UCSR0B |= (1 << TXEN0);
 
 	//USART Mode Selection : Asynchronous
-	UCSR0C &= ~(1 << UMSEL01);
-	UCSR0C &= ~(1 << UMSEL00);
+	UCSR0C = 0x6;
 }
 
 uint8_t IO_USART_Receive(void)
@@ -103,4 +107,9 @@ uint8_t IO_USART_Receive(void)
 
 void IO_USART_Transmit(uint8_t data)
 {
+	//Wait for empty transmit buffer
+	while ((UCSR0A & (1 << UDRE0)) == 0);
+
+	//Put data into buffer, sends the data
+	UDR0 = data;
 }
