@@ -74,3 +74,33 @@ void IO_SetOutput(io_pin_e pin, io_output_e output)
 		break;
 	}
 }
+
+#define BAUDERATE_9600 129u
+
+void IO_InitUSART(void)
+{
+	//Set the baudrate
+	//Set the baudrate to 9800 bps using external 20MHz RC Oscillator
+	//UBRR0H and UBRR0L registers are a 16 bit register pair
+	///in case the baudrate register value is greater then 255, that means that the value is greater then 8 bits
+	//so by bit shifting 8 to the right we remove the first byte and focus on the second byte in the 16 bit value
+	UBRR0H = (BAUDERATE_9600 >> 8);
+	UBRR0L = BAUDERATE_9600; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
+
+	//Enable receiver and transmitter
+	UCSR0B |= (1 << RXEN0);
+	UCSR0B |= (1 << TXEN0);
+
+	//USART Mode Selection : Asynchronous
+	UCSR0C &= ~(1 << UMSEL01);
+	UCSR0C &= ~(1 << UMSEL00);
+}
+
+uint8_t IO_USART_Receive(void)
+{
+	return 0;
+}
+
+void IO_USART_Transmit(uint8_t data)
+{
+}

@@ -41,7 +41,9 @@ typedef enum
 
 typedef enum
 {
-	IO_ERR_LED = IO_PB_0
+	IO_ERR_LED   = IO_PB_0,
+	IO_UART_RXD0 = IO_PD_0,
+	IO_UART_TXD0 = IO_PD_1,
 } io_pin_e;
 
 typedef enum
@@ -81,5 +83,10 @@ void IO_ConfigurePin(io_pin_e pin, const io_config* config);
 void IO_SetDirection(io_pin_e pin, io_dir_e direction);
 void IO_SetOutput(io_pin_e pin, io_output_e output);
 io_input_e IO_GetInput(io_pin_e pin);
+
+//uart
+void IO_InitUSART(void);
+uint8_t IO_USART_Receive(void);
+void IO_USART_Transmit(uint8_t data);
 
 #endif //PLANTIE_IO_H
