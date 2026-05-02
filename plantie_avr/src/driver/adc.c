@@ -2,6 +2,8 @@
 
 #include <avr/io.h>
 
+#define RESOLUTION_10_BIT_VOLTAGE 1024.0
+
 void ADC_Init(void)
 {
 	//Voltage Reference Selection set to AVCC with external capacitor at AREF pin
@@ -32,5 +34,7 @@ uint16_t ADC_GetRawData(void)
 
 double ADC_GetVoltageData(uint16_t rawData)
 {
-	return (rawData * 5) / 1024.0;
+	//1024.0 comes from that the atmega644p has adc 10bit resolution (0 - 1023) 0x3FF
+	//we divide by 1024 as the resolution has 1024 steps
+	return (rawData * 5) / RESOLUTION_10_BIT_VOLTAGE;
 }

@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define RESOLUTION_10_BIT (1024 - 1)
-
 void ADC_Init(void);
 void ADC_StartConversion(void);
 void ADC_WaitUntilFinished(void);
