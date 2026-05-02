@@ -1,4 +1,5 @@
 #include "plantie_io.h"
+#include "adc.h"
 
 #include <avr/io.h>
 
@@ -36,6 +37,23 @@ void IO_InitMcu(void)
 	IO_ConfigurePin(IO_ERR_LED, &errLed);
 
 	IO_InitUSART();
+
+	//Init ADC
+	io_config adcConfig = {
+		.dir    = IO_DIR_INPUT,
+		.output = IO_OUTPUT_LOW
+	};
+
+	IO_ConfigurePin(IO_ADC0, &adcConfig);
+	IO_ConfigurePin(IO_ADC1, &adcConfig);
+	IO_ConfigurePin(IO_ADC2, &adcConfig);
+	IO_ConfigurePin(IO_ADC3, &adcConfig);
+	IO_ConfigurePin(IO_ADC4, &adcConfig);
+	IO_ConfigurePin(IO_ADC5, &adcConfig);
+	IO_ConfigurePin(IO_ADC6, &adcConfig);
+	IO_ConfigurePin(IO_ADC7, &adcConfig);
+
+	ADC_Init();
 }
 
 void IO_ConfigurePin(io_pin_e pin, const io_config* config)
