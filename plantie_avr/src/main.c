@@ -1,4 +1,5 @@
 #include "plantie_io.h"
+#include "usart.h"
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -10,9 +11,9 @@ int main(void)
 	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 	for (;;)
 	{
-		IO_USART_TransmitMsg("Ready to speak");
+		USART_TransmitMsgPoll("Ready to speak");
 
-		char data = IO_USART_Receive();
+		char data = USART_ReceivePoll();
 		if (data == 'h')
 		{
 			IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);

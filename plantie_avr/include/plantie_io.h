@@ -92,10 +92,4 @@ void IO_SetDirection(io_pin_e pin, io_dir_e direction);
 void IO_SetOutput(io_pin_e pin, io_output_e output);
 io_input_e IO_GetInput(io_pin_e pin);
 
-//uart
-void IO_InitUSART(void);
-char IO_USART_Receive(void);
-void IO_USART_Transmit(char data);
-void IO_USART_TransmitMsg(char* data);
-
 #endif //PLANTIE_IO_H
