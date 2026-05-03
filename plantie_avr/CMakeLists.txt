@@ -7,7 +7,7 @@ elseif(IS_UNIX)
 endif()
 
 ## AVR Chip Configuration
-# 20Mhz, this should match the crystal on your board,
+# 20Mhz, oscillator,
 set(F_CPU 20000000UL)
 # CPU, you can find the list here:
 # https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html
@@ -16,7 +16,8 @@ set(F_CPU 20000000UL)
 set(MCU atmega644p)
 
 # Default Baudrate for UART, read avr include/util/setbaud.h for usage
-set(BAUD 9600)
+# we handle baud through code right now so this is commented
+# set(BAUD 9600)
 
 # The programmer to use, read avrdude manual for list
 set(PROGRAMMER usbasp)
@@ -34,9 +35,10 @@ set(LOCK_BIT 0xFF) # This means all lock bits are unprogrammed
 # Pass defines to compiler
 add_definitions(
     -DF_CPU=${F_CPU}
-    -DBAUD=${BAUD}
+    #-DBAUD=${BAUD} #handled though code right now
 )
-# mmcu MUST be passed to both the compiler and linker, this handle the linker
+
+# mmcu MUST be passed to both the compiler and linker, this handles the linker
 set(CMAKE_EXE_LINKER_FLAGS -mmcu=${MCU})
 
 add_compile_options(
@@ -63,7 +65,7 @@ add_compile_options(
     -fno-tree-scev-cprop
 )
 
-# Automatically find all .cpp and .h files
+# Automatically find all .c and .h files
 file(GLOB_RECURSE C_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
 file(GLOB_RECURSE HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
