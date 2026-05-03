@@ -37,13 +37,15 @@ typedef enum
 	IO_PD_5,
 	IO_PD_6,
 	IO_PD_7
-} io_generic_pin_e;
+} IO_GENERIC_PIN;
 
 typedef enum
 {
 	IO_ERR_LED   = IO_PB_0,
 	IO_UART_RXD0 = IO_PD_0,
 	IO_UART_TXD0 = IO_PD_1,
+	IO_UART_RXD1 = IO_PD_2,
+	IO_UART_TXD1 = IO_PD_3,
 	IO_ADC0      = IO_PA_0,
 	IO_ADC1      = IO_PA_1,
 	IO_ADC2      = IO_PA_2,
@@ -52,7 +54,7 @@ typedef enum
 	IO_ADC5      = IO_PA_5,
 	IO_ADC6      = IO_PA_6,
 	IO_ADC7      = IO_PA_7,
-} io_pin_e;
+} IO_PIN;
 
 typedef enum
 {
@@ -60,36 +62,36 @@ typedef enum
 	IO_PORTB,
 	IO_PORTC,
 	IO_PORTD
-} io_port_e;
+} IO_PORT;
 
 typedef enum
 {
 	IO_DIR_INPUT,
 	IO_DIR_OUTPUT
-} io_dir_e;
+} IO_DIR;
 
 typedef enum
 {
 	IO_OUTPUT_HIGH,
 	IO_OUTPUT_LOW
-} io_output_e;
+} IO_OUTPUT;
 
 typedef enum
 {
 	IO_INPUT_LOW,
 	IO_INPUT_HIGH
-} io_input_e;
+} IO_INPUT;
 
 typedef struct
 {
-	io_dir_e dir;
-	io_output_e output;
-} io_config;
+	IO_DIR dir;
+	IO_OUTPUT output;
+} IO_CONFIG;
 
 void IO_InitMcu(void);
-void IO_ConfigurePin(io_pin_e pin, const io_config* config);
-void IO_SetDirection(io_pin_e pin, io_dir_e direction);
-void IO_SetOutput(io_pin_e pin, io_output_e output);
-io_input_e IO_GetInput(io_pin_e pin);
+void IO_ConfigurePin(IO_PIN pin, const IO_CONFIG* config);
+void IO_SetDirection(IO_PIN pin, IO_DIR direction);
+void IO_SetOutput(IO_PIN pin, IO_OUTPUT output);
+IO_INPUT IO_GetInput(IO_PIN pin);
 
 #endif //PLANTIE_IO_H

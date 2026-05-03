@@ -13,7 +13,7 @@ set(F_CPU 20000000UL)
 # https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html
 
 # Select what Microcontroller the project uses
-set(MCU atmega644)
+set(MCU atmega644p)
 
 # Default Baudrate for UART, read avr include/util/setbaud.h for usage
 set(BAUD 9600)

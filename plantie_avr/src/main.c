@@ -16,7 +16,7 @@ int main(void)
 	for (;;)
 	{
 		// USART_TransmitIE('i');
-		USART_TransmitMsgIE("interrupt hello\r");
+		USART_TransmitMsgIE(IO_UART_TXD0, "interrupt hello\r");
 		_delay_ms(1000);
 	}
 	// for (;;)
