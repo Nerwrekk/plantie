@@ -2,7 +2,9 @@
 
 #include <avr/io.h>
 
-#define BAUDERATE_9600 129u
+#define BAUDERATE_9600    129u
+#define BAUDERATE_115200  10u
+#define SELECTED_BAUDRATE BAUDERATE_115200
 
 void USART_Init(void)
 {
@@ -11,8 +13,8 @@ void USART_Init(void)
 	//UBRR0H and UBRR0L registers are a 16 bit register pair
 	///in case the baudrate register value is greater then 255, that means that the value is greater then 8 bits
 	//so by bit shifting 8 to the right we remove the first byte and focus on the second byte in the 16 bit value
-	UBRR0H = (BAUDERATE_9600 >> 8);
-	UBRR0L = BAUDERATE_9600; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
+	UBRR0H = (SELECTED_BAUDRATE >> 8);
+	UBRR0L = SELECTED_BAUDRATE; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
 
 	//Usart control and status register A
 	UCSR0A = 0x00;
