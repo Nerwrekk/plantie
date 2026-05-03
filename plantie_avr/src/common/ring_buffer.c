@@ -32,7 +32,7 @@ uint8_t ring_buffer_peek(const ring_buffer* ringBuf)
 
 bool ring_buffer_isEmpty(const ring_buffer* ringBuf)
 {
-	return ringBuf->tail == ringBuf->head;
+	return (ringBuf->tail == ringBuf->head);
 }
 
 bool ring_buffer_isFull(const ring_buffer* ringBuf)
