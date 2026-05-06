@@ -1,5 +1,6 @@
 #include "usart.h"
 #include "ring_buffer.h"
+#include "plantie_globals.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -89,6 +90,11 @@ ISR(USART0_RX_vect)
 	uint8_t data = UDR0;
 
 	ring_buffer_put(&USART0_RX_ringBuffer, data);
+
+	if (data == '\r')
+	{
+		PLANTIE_FLAGS |= RX_MSG_RDY;
+	}
 }
 
 //usart0 USART0 Data register Empty interrupt
@@ -105,15 +111,15 @@ ISR(USART0_UDRE_vect)
 	}
 }
 
-// //usart1 rx interrupt
-// ISR(USART1_RX_vect)
-// {
-// }
+//usart1 rx interrupt
+ISR(USART1_RX_vect)
+{
+}
 
-// //usart1 tx interrupt
-// ISR(USART1_TX_vect)
-// {
-// }
+//usart1 tx interrupt
+ISR(USART1_UDRE_vect)
+{
+}
 
 void USART_Init(void)
 {
@@ -125,18 +131,58 @@ void USART_Init(void)
 	UBRR0H = (SELECTED_BAUDRATE >> 8);
 	UBRR0L = SELECTED_BAUDRATE; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
 
+	UBRR1H = (SELECTED_BAUDRATE >> 8);
+	UBRR1L = SELECTED_BAUDRATE; //if the value is greater then 255 then thoose bits will be discarded when setting the low bit register
+
 	//Usart control and status register A
 	UCSR0A = 0x00;
+
+	UCSR1A = 0x00;
 
 	//Enable receiver and transmitter
 	UCSR0B |= (1 << RXEN0);
 	UCSR0B |= (1 << TXEN0);
 
+	UCSR1B |= (1 << RXEN1);
+	UCSR1B |= (1 << TXEN1);
+
 	//Enable RX complete interrupt
 	UCSR0B |= (1 << RXCIE0);
+	UCSR1B |= (1 << RXCIE1);
 
 	//USART Mode Selection : Asynchronous
 	UCSR0C = 0x6;
+	UCSR1C = 0x6;
+}
+
+void USART_SendCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
+{
+	for (uint8_t i = 0; i < inRxMsg->size; i++)
+	{
+		USART_TransmitPoll(uartPin, (char)inRxMsg->data[i]);
+	}
+}
+
+void USART_GetCompleteRxMsg(RX_MSG* inRxMsg)
+{
+	uint8_t indx = 0;
+	while (true)
+	{
+		if (ring_buffer_isEmpty(&USART0_RX_ringBuffer))
+		{
+			break;
+		}
+
+		uint8_t byte        = ring_buffer_get(&USART0_RX_ringBuffer);
+		inRxMsg->data[indx] = byte;
+		inRxMsg->size++;
+		indx++;
+
+		if (byte == '\0')
+		{
+			break;
+		}
+	}
 }
 
 char USART_ReceivePoll(IO_PIN uartPin)
