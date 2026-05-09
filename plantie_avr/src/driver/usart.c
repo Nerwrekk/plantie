@@ -93,7 +93,7 @@ ISR(USART0_RX_vect)
 
 	if (data == '\r')
 	{
-		PLANTIE_FLAGS |= RX_MSG_RDY;
+		PLANTIE_FLAGS |= PC_RX_MSG_RDY;
 	}
 }
 

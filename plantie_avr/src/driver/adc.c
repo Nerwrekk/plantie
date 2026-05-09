@@ -1,8 +1,16 @@
 #include "adc.h"
+#include "plantie_globals.h"
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 #define RESOLUTION_10_BIT_VOLTAGE 1024.0
+
+ISR(ADC_vect)
+{
+	PLANTIE_FLAGS |= ADC_DATA_RDY;
+	ADC_StartConversion();
+}
 
 void ADC_Init(void)
 {
@@ -10,8 +18,8 @@ void ADC_Init(void)
 	//ADLAR set to right Adjust Result
 	ADMUX = 0x40;
 
-	//ADC Enable, ADC Prescaler Select bit all set to 1
-	ADCSRA = 0x87;
+	//ADC Enable,  Interrupt Enable, ADC Prescaler Select bit all set to 1
+	ADCSRA = 0x8F;
 }
 
 void ADC_StartConversion(void)
