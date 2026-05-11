@@ -2,12 +2,12 @@
 #include "usart.h"
 #include "adc.h"
 #include "plantie_globals.h"
+#include "plantie_util.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
-#include <stdlib.h>
 
 int main(void)
 {
@@ -28,12 +28,11 @@ int main(void)
 	{
 		if ((PLANTIE_FLAGS & ADC_DATA_RDY) > 0)
 		{
-			PLANTIE_FLAGS &= ~(ADC_DATA_RDY);
 			cli();
+			PLANTIE_FLAGS &= ~(ADC_DATA_RDY);
 			uint16_t data = ADC_GetRawData();
 			char buf[8];
-			itoa(data, buf, 10);
-			buf[7] = '\0';
+			PUtil_Uint16ToAscii(data, buf, sizeof(buf));
 			USART_TransmitMsgPoll(IO_UART_TXD0, buf);
 			USART_TransmitPoll(IO_UART_TXD0, '\r');
 			sei();
@@ -41,8 +40,8 @@ int main(void)
 
 		if ((PLANTIE_FLAGS & PC_RX_MSG_RDY) > 0)
 		{
-			USART_TransmitMsgPoll(IO_UART_TXD0, "RX recieved\r");
 			cli();
+			USART_TransmitMsgPoll(IO_UART_TXD0, "RX recieved\r");
 			RX_MSG msg = { 0 };
 			USART_GetCompleteRxMsg(&msg);
 			USART_SendCompleteRxMsg(IO_UART_TXD0, &msg);
