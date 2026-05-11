@@ -22,7 +22,6 @@ void PUtil_Uint16ToAscii(uint16_t value, char* str, uint8_t size)
 		str[i] = temp[indx - i - 1];
 	}
 
-	indx++;
 	if (indx >= size)
 	{
 		indx = size;
