@@ -22,7 +22,7 @@ int main(void)
 	//wet == 721
 	//dry == 895
 
-	ADC_StartConversion();
+	// ADC_StartConversion();
 
 	for (;;)
 	{
@@ -58,7 +58,6 @@ int main(void)
 			}
 			sei();
 		}
-		_delay_ms(1000);
 	}
 
 	// for (;;)

@@ -9,7 +9,7 @@
 ISR(ADC_vect)
 {
 	PLANTIE_FLAGS |= ADC_DATA_RDY;
-	ADC_StartConversion();
+	// ADC_StartConversion();
 }
 
 void ADC_Init(void)

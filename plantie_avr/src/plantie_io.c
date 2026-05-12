@@ -1,6 +1,7 @@
 #include "plantie_io.h"
 #include "adc.h"
 #include "usart.h"
+#include "timer.h"
 
 #include <avr/io.h>
 
@@ -55,6 +56,7 @@ void IO_InitMcu(void)
 	IO_ConfigurePin(IO_ADC7, &adcConfig);
 
 	ADC_Init();
+	timer_Init();
 }
 
 void IO_ConfigurePin(IO_PIN pin, const IO_CONFIG* config)
