@@ -9,16 +9,21 @@
 #define TIME_FEQ_1_SEC 19530u
 
 static uint16_t seconds = 0;
-// static uint8_t minutes  = 0;
+static uint8_t minutes  = 0;
 
 ISR(TIMER1_COMPA_vect)
 {
 	seconds++;
 
-	if (seconds == 10)
+	if (seconds == 60)
 	{
 		seconds = 0;
-		ADC_StartConversion();
+		minutes++;
+		if (minutes == 1)
+		{
+			minutes = 0;
+			ADC_StartConversion();
+		}
 	}
 }
 
