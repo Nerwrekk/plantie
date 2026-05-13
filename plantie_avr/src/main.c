@@ -41,21 +41,38 @@ int main(void)
 		if ((PLANTIE_FLAGS & PC_RX_MSG_RDY) > 0)
 		{
 			cli();
+			PLANTIE_FLAGS &= ~(PC_RX_MSG_RDY);
+			sei();
 			USART_TransmitMsgPoll(IO_UART_TXD0, "RX recieved\r");
 			RX_MSG msg = { 0 };
-			USART_GetCompleteRxMsg(&msg);
+			USART_GetCompleteRxMsg(IO_UART_RXD0, &msg);
 			USART_SendCompleteRxMsg(IO_UART_TXD0, &msg);
-			PLANTIE_FLAGS &= ~(PC_RX_MSG_RDY);
 
-			if (strcmp((char*)msg.data, "AT+HIGH\r") == 0)
+			if (strcmp((char*)msg.data, "HIGH\r") == 0)
 			{
 				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 			}
 
-			if (strcmp((char*)msg.data, "AT+LOW\r") == 0)
+			if (strcmp((char*)msg.data, "LOW\r") == 0)
 			{
 				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
 			}
+
+			if (strcmp((char*)msg.data, "AT\r\n") == 0)
+			{
+				USART_SendCompleteRxMsg(IO_UART_TXD1, &msg);
+				// USART_TransmitMsgIE(IO_UART_TXD1, (char*)msg.data);
+			}
+		}
+
+		if ((PLANTIE_FLAGS & ESP_RX_MSG_RDY) > 0)
+		{
+			cli();
+			PLANTIE_FLAGS &= ~(ESP_RX_MSG_RDY);
+			RX_MSG msg = { 0 };
+			USART_GetCompleteRxMsg(IO_UART_RXD1, &msg);
+			USART_SendCompleteRxMsg(IO_UART_TXD0, &msg);
+
 			sei();
 		}
 	}

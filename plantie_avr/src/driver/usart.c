@@ -91,7 +91,7 @@ ISR(USART0_RX_vect)
 
 	ring_buffer_put(&USART0_RX_ringBuffer, data);
 
-	if (data == '\r')
+	if (data == '\n')
 	{
 		PLANTIE_FLAGS |= PC_RX_MSG_RDY;
 	}
@@ -111,14 +111,30 @@ ISR(USART0_UDRE_vect)
 	}
 }
 
-//usart1 rx interrupt
+//usart1 Rx Complete interrupt
 ISR(USART1_RX_vect)
 {
+	uint8_t data = UDR1;
+
+	ring_buffer_put(&USART1_RX_ringBuffer, data);
+
+	if (data == '\n' || data == '\0')
+	{
+		PLANTIE_FLAGS |= ESP_RX_MSG_RDY;
+	}
 }
 
 //usart1 tx interrupt
 ISR(USART1_UDRE_vect)
 {
+	if (!ring_buffer_isEmpty(&USART1_TX_ringBuffer))
+	{
+		UDR1 = ring_buffer_get(&USART1_TX_ringBuffer);
+	}
+	else
+	{
+		USART_DisableInterruptTX(IO_UART_TXD1);
+	}
 }
 
 void USART_Init(void)
@@ -163,17 +179,18 @@ void USART_SendCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
 	}
 }
 
-void USART_GetCompleteRxMsg(RX_MSG* inRxMsg)
+void USART_GetCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
 {
-	uint8_t indx = 0;
+	ring_buffer* ringBuf = GetRingBuffer(uartPin);
+	uint8_t indx         = 0;
 	while (true)
 	{
-		if (ring_buffer_isEmpty(&USART0_RX_ringBuffer))
+		if (ring_buffer_isEmpty(ringBuf))
 		{
 			break;
 		}
 
-		uint8_t byte        = ring_buffer_get(&USART0_RX_ringBuffer);
+		uint8_t byte        = ring_buffer_get(ringBuf);
 		inRxMsg->data[indx] = byte;
 		inRxMsg->size++;
 		indx++;
@@ -187,19 +204,54 @@ void USART_GetCompleteRxMsg(RX_MSG* inRxMsg)
 
 char USART_ReceivePoll(IO_PIN uartPin)
 {
-	//Wait for incoming data
-	while ((UCSR0A & (1 << RXC0)) == 0);
+	switch (uartPin)
+	{
+	case IO_UART_RXD0:
+	{
+		//Wait for incoming data
+		while ((UCSR0A & (1 << RXC0)) == 0);
 
-	return UDR0;
+		return UDR0;
+	}
+	case IO_UART_RXD1:
+	{
+		//Wait for incoming data
+		while ((UCSR1A & (1 << RXC1)) == 0);
+
+		return UDR1;
+	}
+	default:
+		return '\0';
+	}
 }
 
 void USART_TransmitPoll(IO_PIN uartPin, char data)
 {
-	//Wait for empty transmit buffer
-	while ((UCSR0A & (1 << UDRE0)) == 0);
+	switch (uartPin)
+	{
+	case IO_UART_TXD0:
+	{
+		//Wait for empty transmit buffer
+		while ((UCSR0A & (1 << UDRE0)) == 0);
 
-	//Put data into buffer, sends the data
-	UDR0 = data;
+		//Put data into buffer, sends the data
+		UDR0 = data;
+
+		break;
+	}
+	case IO_UART_TXD1:
+	{
+		//Wait for empty transmit buffer
+		while ((UCSR1A & (1 << UDRE1)) == 0);
+
+		//Put data into buffer, sends the data
+		UDR1 = data;
+
+		break;
+	}
+	default:
+		return;
+	}
 }
 
 void USART_TransmitMsgPoll(IO_PIN uartPin, char* data)

@@ -12,7 +12,7 @@ typedef struct
 void USART_Init(void);
 
 void USART_SendCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg);
-void USART_GetCompleteRxMsg(RX_MSG* inRxMsg);
+void USART_GetCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg);
 
 //polling
 char USART_ReceivePoll(IO_PIN uartPin);
