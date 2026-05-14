@@ -12,7 +12,7 @@ ISR(ADC_vect)
 	// ADC_StartConversion();
 }
 
-void ADC_Init(void)
+void adc_Init(void)
 {
 	//Voltage Reference Selection set to AVCC with external capacitor at AREF pin
 	//ADLAR set to right Adjust Result
@@ -22,25 +22,25 @@ void ADC_Init(void)
 	ADCSRA = 0x8F;
 }
 
-void ADC_StartConversion(void)
+void adc_StartConversion(void)
 {
 	//Set ADSC bit to 1 to begin the conversion
 	ADCSRA |= (1 << ADSC);
 }
 
-void ADC_WaitUntilFinished(void)
+void adc_WaitUntilFinished(void)
 {
 	//wait until ADSC bit is set to 0 which indicates that the conversion is finished
 	while ((ADCSRA & (1 << ADSC)) != 0);
 }
 
-uint16_t ADC_GetRawData(void)
+uint16_t adc_GetRawData(void)
 {
 	//ADLAR set to right Adjust Result
 	return (ADCL) | (ADCH << 8);
 }
 
-double ADC_GetVoltageData(uint16_t rawData)
+double adc_GetVoltageData(uint16_t rawData)
 {
 	//1024.0 comes from that the atmega644p has adc 10bit resolution (0 - 1023) 0x3FF
 	//we divide by 1024 as the resolution has 1024 steps

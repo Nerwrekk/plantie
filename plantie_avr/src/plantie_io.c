@@ -55,7 +55,7 @@ void IO_InitMcu(void)
 	IO_ConfigurePin(IO_ADC6, &adcConfig);
 	IO_ConfigurePin(IO_ADC7, &adcConfig);
 
-	ADC_Init();
+	adc_Init();
 	timer_Init();
 }
 

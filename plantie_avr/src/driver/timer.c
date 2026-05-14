@@ -22,7 +22,7 @@ ISR(TIMER1_COMPA_vect)
 		if (minutes == 1)
 		{
 			minutes = 0;
-			ADC_StartConversion();
+			adc_StartConversion();
 		}
 	}
 }

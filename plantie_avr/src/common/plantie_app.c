@@ -12,7 +12,7 @@
 
 void app_HandleAdcDataRdy()
 {
-	uint16_t data = ADC_GetRawData();
+	uint16_t data = adc_GetRawData();
 	char buf[16];
 	PUtil_Uint16ToAscii(data, buf, sizeof(buf));
 
