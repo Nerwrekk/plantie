@@ -28,11 +28,11 @@ void app_HandlePcRxMsgRdy()
 
 	UART_MSG msg = { 0 };
 	uart_GetCompleteRxMsg(IO_UART_PC_RX, &msg);
-	uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
+	uart_QueueTxMsgIE(IO_UART_PC_TX, &msg);
 
 	if (strncmp((char*)msg.data, "AT", 2) == 0)
 	{
-		uart_SendCompleteMsgPoll(IO_UART_ESP_TX, &msg);
+		uart_QueueTxMsgIE(IO_UART_ESP_TX, &msg);
 
 		return;
 	}
@@ -56,7 +56,5 @@ void app_HandleEspRxMsgRdy()
 {
 	UART_MSG msg = { 0 };
 	uart_GetCompleteRxMsg(IO_UART_ESP_RX, &msg);
-	uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
-
-	sei();
+	uart_QueueTxMsgIE(IO_UART_PC_TX, &msg);
 }
