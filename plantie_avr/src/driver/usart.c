@@ -10,20 +10,20 @@
 #define BAUDERATE_115200  10u
 #define SELECTED_BAUDRATE BAUDERATE_115200
 
-#define USART_BUFFER_SIZE  16
+#define USART0_BUFFER_SIZE 32
 #define USART1_BUFFER_SIZE 128
 
 //USART0
-static uint8_t USART0_TX_buffer[USART_BUFFER_SIZE];
+static uint8_t USART0_TX_buffer[USART0_BUFFER_SIZE];
 static ring_buffer USART0_TX_ringBuffer = {
 	.dataBuf = USART0_TX_buffer,
-	.size    = USART_BUFFER_SIZE
+	.size    = USART0_BUFFER_SIZE
 };
 
-static uint8_t USART0_RX_buffer[USART_BUFFER_SIZE];
+static uint8_t USART0_RX_buffer[USART0_BUFFER_SIZE];
 static ring_buffer USART0_RX_ringBuffer = {
 	.dataBuf = USART0_RX_buffer,
-	.size    = USART_BUFFER_SIZE
+	.size    = USART0_BUFFER_SIZE
 };
 
 //USART1

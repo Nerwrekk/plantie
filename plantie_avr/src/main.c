@@ -1,13 +1,20 @@
 #include "plantie_io.h"
-#include "usart.h"
-#include "adc.h"
 #include "plantie_globals.h"
-#include "plantie_util.h"
+#include "plantie_app.h"
+#include "usart.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <string.h>
+
+static inline void Plantie_ClearFlag(uint8_t flag)
+{
+	uint8_t sreg = SREG;
+	cli();
+	PLANTIE_FLAGS &= ~(flag);
+	SREG = sreg; //restore glob interrupts
+}
 
 int main(void)
 {
@@ -28,52 +35,23 @@ int main(void)
 	{
 		if ((PLANTIE_FLAGS & ADC_DATA_RDY))
 		{
-			cli();
-			PLANTIE_FLAGS &= ~(ADC_DATA_RDY);
-			uint16_t data = ADC_GetRawData();
-			char buf[8];
-			PUtil_Uint16ToAscii(data, buf, sizeof(buf));
-			uart_TransmitMsgPoll(IO_UART_PC_TX, buf);
-			uart_TransmitPoll(IO_UART_PC_TX, '\r');
-			sei();
+			Plantie_ClearFlag(ADC_DATA_RDY);
+
+			app_HandleAdcDataRdy();
 		}
 
 		if ((PLANTIE_FLAGS & PC_RX_MSG_RDY))
 		{
-			cli();
-			PLANTIE_FLAGS &= ~(PC_RX_MSG_RDY);
-			sei();
-			uart_TransmitMsgPoll(IO_UART_PC_TX, "RX recieved\r");
-			UART_MSG msg = { 0 };
-			uart_GetCompleteRxMsg(IO_UART_PC_RX, &msg);
-			uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
+			Plantie_ClearFlag(PC_RX_MSG_RDY);
 
-			if (strcmp((char*)msg.data, "HIGH\r\n") == 0)
-			{
-				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
-			}
-
-			if (strcmp((char*)msg.data, "LOW\r\n") == 0)
-			{
-				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
-			}
-
-			if (strncmp((char*)msg.data, "AT", 2) == 0)
-			{
-				uart_SendCompleteMsgPoll(IO_UART_ESP_TX, &msg);
-				// USART_TransmitMsgIE(IO_UART_TXD1, (char*)msg.data);
-			}
+			app_HandlePcRxMsgRdy();
 		}
 
 		if ((PLANTIE_FLAGS & ESP_RX_MSG_RDY))
 		{
-			cli();
-			PLANTIE_FLAGS &= ~(ESP_RX_MSG_RDY);
-			UART_MSG msg = { 0 };
-			uart_GetCompleteRxMsg(IO_UART_ESP_RX, &msg);
-			uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
+			Plantie_ClearFlag(ESP_RX_MSG_RDY);
 
-			sei();
+			app_HandleEspRxMsgRdy();
 		}
 	}
 }

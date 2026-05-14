@@ -1,3 +1,3 @@
 #include "plantie_globals.h"
 
-uint8_t PLANTIE_FLAGS = 0;
+volatile uint8_t PLANTIE_FLAGS = 0;

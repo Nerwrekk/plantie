@@ -7,6 +7,6 @@
 #define ESP_RX_MSG_RDY 0x2u
 #define PC_RX_MSG_RDY  0x8u
 
-extern uint8_t PLANTIE_FLAGS;
+extern volatile uint8_t PLANTIE_FLAGS;
 
 #endif //PLANTIE_GLOBALS_H
