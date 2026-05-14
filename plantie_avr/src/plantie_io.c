@@ -38,7 +38,7 @@ void IO_InitMcu(void)
 
 	IO_ConfigurePin(IO_ERR_LED, &errLed);
 
-	USART_Init();
+	uart_Init();
 
 	//Init ADC
 	IO_CONFIG adcConfig = {

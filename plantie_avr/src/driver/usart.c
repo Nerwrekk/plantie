@@ -10,7 +10,8 @@
 #define BAUDERATE_115200  10u
 #define SELECTED_BAUDRATE BAUDERATE_115200
 
-#define USART_BUFFER_SIZE 16
+#define USART_BUFFER_SIZE  16
+#define USART1_BUFFER_SIZE 128
 
 //USART0
 static uint8_t USART0_TX_buffer[USART_BUFFER_SIZE];
@@ -26,38 +27,38 @@ static ring_buffer USART0_RX_ringBuffer = {
 };
 
 //USART1
-static uint8_t USART1_TX_buffer[USART_BUFFER_SIZE];
+static uint8_t USART1_TX_buffer[USART1_BUFFER_SIZE];
 static ring_buffer USART1_TX_ringBuffer = {
 	.dataBuf = USART1_TX_buffer,
-	.size    = USART_BUFFER_SIZE
+	.size    = USART1_BUFFER_SIZE
 };
 
-static uint8_t USART1_RX_buffer[USART_BUFFER_SIZE];
+static uint8_t USART1_RX_buffer[USART1_BUFFER_SIZE];
 static ring_buffer USART1_RX_ringBuffer = {
 	.dataBuf = USART1_RX_buffer,
-	.size    = USART_BUFFER_SIZE
+	.size    = USART1_BUFFER_SIZE
 };
 
-static inline void USART_DisableInterruptTX(IO_PIN pin)
+static inline void uart_DisableInterruptTX(IO_PIN pin)
 {
 	//TODO: ASSERT here
-	if (pin == IO_UART_TXD0)
+	if (pin == IO_UART_PC_TX)
 	{
 		UCSR0B &= ~(1 << UDRIE0);
 	}
-	else if (IO_UART_TXD1)
+	else if (IO_UART_ESP_TX)
 	{
 		UCSR1B &= ~(1 << UDRIE1);
 	}
 }
 
-static inline void USART_EnableInterruptTX(IO_PIN pin)
+static inline void uart_EnableInterruptTX(IO_PIN pin)
 {
-	if (pin == IO_UART_TXD0)
+	if (pin == IO_UART_PC_TX)
 	{
 		UCSR0B |= (1 << UDRIE0);
 	}
-	else if (IO_UART_TXD1)
+	else if (IO_UART_ESP_TX)
 	{
 		UCSR1B |= (1 << UDRIE1);
 	}
@@ -67,16 +68,16 @@ static inline ring_buffer* GetRingBuffer(IO_PIN pin)
 {
 	switch (pin)
 	{
-	case IO_UART_RXD0:
+	case IO_UART_PC_RX:
 		return &USART0_RX_ringBuffer;
 
-	case IO_UART_RXD1:
+	case IO_UART_ESP_RX:
 		return &USART1_RX_ringBuffer;
 
-	case IO_UART_TXD0:
+	case IO_UART_PC_TX:
 		return &USART0_TX_ringBuffer;
 
-	case IO_UART_TXD1:
+	case IO_UART_ESP_TX:
 		return &USART1_TX_ringBuffer;
 
 	default:
@@ -91,7 +92,7 @@ ISR(USART0_RX_vect)
 
 	ring_buffer_put(&USART0_RX_ringBuffer, data);
 
-	if (data == '\n')
+	if (data == '\n' || data == '\0')
 	{
 		PLANTIE_FLAGS |= PC_RX_MSG_RDY;
 	}
@@ -107,7 +108,7 @@ ISR(USART0_UDRE_vect)
 	}
 	else
 	{
-		USART_DisableInterruptTX(IO_UART_TXD0);
+		uart_DisableInterruptTX(IO_UART_PC_TX);
 	}
 }
 
@@ -133,11 +134,11 @@ ISR(USART1_UDRE_vect)
 	}
 	else
 	{
-		USART_DisableInterruptTX(IO_UART_TXD1);
+		uart_DisableInterruptTX(IO_UART_ESP_TX);
 	}
 }
 
-void USART_Init(void)
+void uart_Init(void)
 {
 	//Set the baudrate
 	//Set the baudrate to 9800 bps using external 20MHz RC Oscillator (see datasheet Table 21-4. Examples of UBRRn Settings for Commonly Used Oscillator Frequencies)
@@ -171,15 +172,15 @@ void USART_Init(void)
 	UCSR1C = 0x6;
 }
 
-void USART_SendCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
+void uart_SendCompleteMsgPoll(IO_PIN uartPin, UART_MSG* inRxMsg)
 {
 	for (uint8_t i = 0; i < inRxMsg->size; i++)
 	{
-		USART_TransmitPoll(uartPin, (char)inRxMsg->data[i]);
+		uart_TransmitPoll(uartPin, (char)inRxMsg->data[i]);
 	}
 }
 
-void USART_GetCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
+void uart_GetCompleteRxMsg(IO_PIN uartPin, UART_MSG* inRxMsg)
 {
 	ring_buffer* ringBuf = GetRingBuffer(uartPin);
 	uint8_t indx         = 0;
@@ -202,18 +203,18 @@ void USART_GetCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg)
 	}
 }
 
-char USART_ReceivePoll(IO_PIN uartPin)
+char uart_ReceivePoll(IO_PIN uartPin)
 {
 	switch (uartPin)
 	{
-	case IO_UART_RXD0:
+	case IO_UART_PC_RX:
 	{
 		//Wait for incoming data
 		while ((UCSR0A & (1 << RXC0)) == 0);
 
 		return UDR0;
 	}
-	case IO_UART_RXD1:
+	case IO_UART_ESP_RX:
 	{
 		//Wait for incoming data
 		while ((UCSR1A & (1 << RXC1)) == 0);
@@ -225,11 +226,11 @@ char USART_ReceivePoll(IO_PIN uartPin)
 	}
 }
 
-void USART_TransmitPoll(IO_PIN uartPin, char data)
+void uart_TransmitPoll(IO_PIN uartPin, char data)
 {
 	switch (uartPin)
 	{
-	case IO_UART_TXD0:
+	case IO_UART_PC_TX:
 	{
 		//Wait for empty transmit buffer
 		while ((UCSR0A & (1 << UDRE0)) == 0);
@@ -239,7 +240,7 @@ void USART_TransmitPoll(IO_PIN uartPin, char data)
 
 		break;
 	}
-	case IO_UART_TXD1:
+	case IO_UART_ESP_TX:
 	{
 		//Wait for empty transmit buffer
 		while ((UCSR1A & (1 << UDRE1)) == 0);
@@ -254,17 +255,17 @@ void USART_TransmitPoll(IO_PIN uartPin, char data)
 	}
 }
 
-void USART_TransmitMsgPoll(IO_PIN uartPin, char* data)
+void uart_TransmitMsgPoll(IO_PIN uartPin, char* data)
 {
 	int indx = 0;
 	while (data[indx] != '\0')
 	{
-		USART_TransmitPoll(uartPin, data[indx]);
+		uart_TransmitPoll(uartPin, data[indx]);
 		++indx;
 	}
 }
 
-char USART_ReceiveIE(IO_PIN uartPin)
+char uart_ReceiveIE(IO_PIN uartPin)
 {
 	if (!ring_buffer_isEmpty(&USART0_TX_ringBuffer))
 	{
@@ -274,7 +275,7 @@ char USART_ReceiveIE(IO_PIN uartPin)
 	return '\0';
 }
 
-void USART_TransmitIE(IO_PIN uartPin, char data)
+void uart_TransmitIE(IO_PIN uartPin, char data)
 {
 	ring_buffer* uartRingBuf = GetRingBuffer(uartPin);
 
@@ -284,15 +285,31 @@ void USART_TransmitIE(IO_PIN uartPin, char data)
 	ring_buffer_put(uartRingBuf, data);
 
 	//enable interrupt
-	USART_EnableInterruptTX(uartPin);
+	uart_EnableInterruptTX(uartPin);
 }
 
-void USART_TransmitMsgIE(IO_PIN uartPin, char* data)
+void uart_QueueTxMsgIE(IO_PIN uartPin, UART_MSG* inMsg)
 {
-	int indx = 0;
-	while (data[indx] != '\0')
+	ring_buffer* ringBuf = GetRingBuffer(uartPin);
+
+	for (uint8_t i = 0; i < inMsg->size; i++)
 	{
-		USART_TransmitIE(uartPin, data[indx]);
+		ring_buffer_put(ringBuf, inMsg->data[i]);
+	}
+
+	uart_EnableInterruptTX(uartPin);
+}
+
+void uart_QueueTxStrIE(IO_PIN uartPin, char* str)
+{
+	ring_buffer* ringBuf = GetRingBuffer(uartPin);
+
+	uint8_t indx = 0;
+	while (str[indx] != '\0')
+	{
+		ring_buffer_put(ringBuf, str[indx]);
 		indx++;
 	}
+
+	uart_EnableInterruptTX(uartPin);
 }

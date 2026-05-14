@@ -5,23 +5,24 @@
 
 typedef struct
 {
-	uint8_t data[32];
+	uint8_t data[64];
 	uint8_t size;
-} RX_MSG;
+} UART_MSG;
 
-void USART_Init(void);
+void uart_Init(void);
 
-void USART_SendCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg);
-void USART_GetCompleteRxMsg(IO_PIN uartPin, RX_MSG* inRxMsg);
+void uart_SendCompleteMsgPoll(IO_PIN uartPin, UART_MSG* inRxMsg);
+void uart_GetCompleteRxMsg(IO_PIN uartPin, UART_MSG* inRxMsg);
 
 //polling
-char USART_ReceivePoll(IO_PIN uartPin);
-void USART_TransmitPoll(IO_PIN uartPin, char data);
-void USART_TransmitMsgPoll(IO_PIN uartPin, char* data);
+char uart_ReceivePoll(IO_PIN uartPin);
+void uart_TransmitPoll(IO_PIN uartPin, char data);
+void uart_TransmitMsgPoll(IO_PIN uartPin, char* data);
 
 //interrupt
-char USART_ReceiveIE(IO_PIN uartPin);
-void USART_TransmitIE(IO_PIN uartPin, char data);
-void USART_TransmitMsgIE(IO_PIN uartPin, char* data);
+char uart_ReceiveIE(IO_PIN uartPin);
+void uart_TransmitIE(IO_PIN uartPin, char data);
+void uart_QueueTxMsgIE(IO_PIN uartPin, UART_MSG* inMsg);
+void uart_QueueTxStrIE(IO_PIN uartPin, char* str);
 
 #endif //USART_H

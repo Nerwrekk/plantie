@@ -16,7 +16,7 @@ int main(void)
 	sei();
 
 	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
-	USART_TransmitMsgIE(IO_UART_TXD0, "Ready for input");
+	uart_QueueTxStrIE(IO_UART_PC_TX, "Ready for input");
 
 	//ADC values
 	//wet == 721
@@ -26,70 +26,54 @@ int main(void)
 
 	for (;;)
 	{
-		if ((PLANTIE_FLAGS & ADC_DATA_RDY) > 0)
+		if ((PLANTIE_FLAGS & ADC_DATA_RDY))
 		{
 			cli();
 			PLANTIE_FLAGS &= ~(ADC_DATA_RDY);
 			uint16_t data = ADC_GetRawData();
 			char buf[8];
 			PUtil_Uint16ToAscii(data, buf, sizeof(buf));
-			USART_TransmitMsgPoll(IO_UART_TXD0, buf);
-			USART_TransmitPoll(IO_UART_TXD0, '\r');
+			uart_TransmitMsgPoll(IO_UART_PC_TX, buf);
+			uart_TransmitPoll(IO_UART_PC_TX, '\r');
 			sei();
 		}
 
-		if ((PLANTIE_FLAGS & PC_RX_MSG_RDY) > 0)
+		if ((PLANTIE_FLAGS & PC_RX_MSG_RDY))
 		{
 			cli();
 			PLANTIE_FLAGS &= ~(PC_RX_MSG_RDY);
 			sei();
-			USART_TransmitMsgPoll(IO_UART_TXD0, "RX recieved\r");
-			RX_MSG msg = { 0 };
-			USART_GetCompleteRxMsg(IO_UART_RXD0, &msg);
-			USART_SendCompleteRxMsg(IO_UART_TXD0, &msg);
+			uart_TransmitMsgPoll(IO_UART_PC_TX, "RX recieved\r");
+			UART_MSG msg = { 0 };
+			uart_GetCompleteRxMsg(IO_UART_PC_RX, &msg);
+			uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
 
-			if (strcmp((char*)msg.data, "HIGH\r") == 0)
+			if (strcmp((char*)msg.data, "HIGH\r\n") == 0)
 			{
 				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 			}
 
-			if (strcmp((char*)msg.data, "LOW\r") == 0)
+			if (strcmp((char*)msg.data, "LOW\r\n") == 0)
 			{
 				IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
 			}
 
-			if (strcmp((char*)msg.data, "AT\r\n") == 0)
+			if (strncmp((char*)msg.data, "AT", 2) == 0)
 			{
-				USART_SendCompleteRxMsg(IO_UART_TXD1, &msg);
+				uart_SendCompleteMsgPoll(IO_UART_ESP_TX, &msg);
 				// USART_TransmitMsgIE(IO_UART_TXD1, (char*)msg.data);
 			}
 		}
 
-		if ((PLANTIE_FLAGS & ESP_RX_MSG_RDY) > 0)
+		if ((PLANTIE_FLAGS & ESP_RX_MSG_RDY))
 		{
 			cli();
 			PLANTIE_FLAGS &= ~(ESP_RX_MSG_RDY);
-			RX_MSG msg = { 0 };
-			USART_GetCompleteRxMsg(IO_UART_RXD1, &msg);
-			USART_SendCompleteRxMsg(IO_UART_TXD0, &msg);
+			UART_MSG msg = { 0 };
+			uart_GetCompleteRxMsg(IO_UART_ESP_RX, &msg);
+			uart_SendCompleteMsgPoll(IO_UART_PC_TX, &msg);
 
 			sei();
 		}
 	}
-
-	// for (;;)
-	// {
-	// 	USART_TransmitMsgPoll("Ready to speak");
-
-	// 	char data = USART_ReceivePoll();
-	// 	if (data == 'h')
-	// 	{
-	// 		IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
-	// 	}
-
-	// 	if (data == 'l')
-	// 	{
-	// 		IO_SetOutput(IO_ERR_LED, IO_OUTPUT_LOW);
-	// 	}
-	// }
 }

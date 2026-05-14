@@ -41,19 +41,19 @@ typedef enum
 
 typedef enum
 {
-	IO_ERR_LED   = IO_PB_0,
-	IO_UART_RXD0 = IO_PD_0,
-	IO_UART_TXD0 = IO_PD_1,
-	IO_UART_RXD1 = IO_PD_2,
-	IO_UART_TXD1 = IO_PD_3,
-	IO_ADC0      = IO_PA_0,
-	IO_ADC1      = IO_PA_1,
-	IO_ADC2      = IO_PA_2,
-	IO_ADC3      = IO_PA_3,
-	IO_ADC4      = IO_PA_4,
-	IO_ADC5      = IO_PA_5,
-	IO_ADC6      = IO_PA_6,
-	IO_ADC7      = IO_PA_7,
+	IO_ERR_LED     = IO_PB_0,
+	IO_UART_PC_RX  = IO_PD_0,
+	IO_UART_PC_TX  = IO_PD_1,
+	IO_UART_ESP_RX = IO_PD_2,
+	IO_UART_ESP_TX = IO_PD_3,
+	IO_ADC0        = IO_PA_0,
+	IO_ADC1        = IO_PA_1,
+	IO_ADC2        = IO_PA_2,
+	IO_ADC3        = IO_PA_3,
+	IO_ADC4        = IO_PA_4,
+	IO_ADC5        = IO_PA_5,
+	IO_ADC6        = IO_PA_6,
+	IO_ADC7        = IO_PA_7,
 } IO_PIN;
 
 typedef enum
