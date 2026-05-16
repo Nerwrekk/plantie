@@ -119,7 +119,7 @@ ISR(USART1_RX_vect)
 
 	ring_buffer_put(&USART1_RX_ringBuffer, data);
 
-	if (data == '\n' || data == '\0')
+	if (data == '>' || data == '\n' || data == '\0')
 	{
 		PLANTIE_FLAGS |= ESP_RX_MSG_RDY;
 	}
@@ -261,7 +261,15 @@ void uart_TransmitMsgPoll(IO_PIN uartPin, char* data)
 	while (data[indx] != '\0')
 	{
 		uart_TransmitPoll(uartPin, data[indx]);
-		++indx;
+		indx++;
+	}
+}
+
+void uart_TransmitTxBinPoll(IO_PIN uartPin, uint8_t* binaryData, uint8_t size)
+{
+	for (uint8_t i = 0; i < size; i++)
+	{
+		uart_TransmitPoll(uartPin, binaryData[i]);
 	}
 }
 
@@ -312,4 +320,94 @@ void uart_QueueTxStrIE(IO_PIN uartPin, char* str)
 	}
 
 	uart_EnableInterruptTX(uartPin);
+}
+
+void uart_QueueTxBinIE(IO_PIN uartPin, uint8_t* binaryData, uint8_t size)
+{
+	ring_buffer* ringBuf = GetRingBuffer(uartPin);
+
+	for (uint8_t i = 0; i < size; i++)
+	{
+		ring_buffer_put(ringBuf, binaryData[i]);
+	}
+
+	uart_EnableInterruptTX(uartPin);
+}
+
+void uart_EmptyBufferIE(IO_PIN uartPin)
+{
+	uint8_t sreg = SREG;
+	cli();
+
+	ring_buffer* ringBuf = GetRingBuffer(uartPin);
+
+	while (!ring_buffer_isEmpty(ringBuf))
+	{
+		ring_buffer_get(ringBuf);
+	}
+
+	SREG = sreg;
+}
+static volatile uint8_t dummy = 0;
+void uart_EmptyBufferPoll(IO_PIN uartPin)
+{
+	if (uartPin == IO_UART_ESP_RX)
+	{
+		while (UCSR1A & (1 << RXC1))
+		{
+			dummy = UDR1;
+		}
+	}
+	else
+	{
+		while (UCSR0A & (1 << RXC0))
+		{
+			dummy = UDR0;
+		}
+	}
+}
+
+void uart_PollEntireMsg(IO_PIN uartPin, UART_MSG* msg)
+{
+	if (uartPin == IO_UART_ESP_RX)
+	{
+		char data    = '\0';
+		uint8_t indx = 0;
+		do
+		{
+			//Wait for empty transmit buffer
+			while ((UCSR1A & (1 << RXC1)) == 0);
+
+			//Put data into buffer, sends the data
+			data            = UDR1;
+			msg->data[indx] = data;
+			msg->size++;
+			indx++;
+
+		} while (data != '\n' && data != '>' && indx < 60);
+	}
+	else
+	{
+		char data    = '\0';
+		uint8_t indx = 0;
+		do
+		{
+			while ((UCSR0A & (1 << RXC0)) == 0);
+
+			//Put data into buffer, sends the data
+			data            = UDR0;
+			msg->data[indx] = data;
+			msg->size++;
+			indx++;
+
+		} while (data != '\n' && data != '\0' && indx < 60);
+	}
+}
+
+void uart_TransmitEntireMsg(IO_PIN uartPin, UART_MSG* msg)
+{
+	for (uint8_t i = 0; i < msg->size; i++)
+	{
+		uart_TransmitPoll(uartPin, msg->data[i]);
+	}
 }

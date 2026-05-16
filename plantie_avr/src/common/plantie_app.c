@@ -5,21 +5,21 @@
 #include "plantie_util.h"
 #include "usart.h"
 #include "adc.h"
+#include "esp_mqtt_state_handler.h"
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 #include <string.h>
+#include <stdbool.h>
 
 void app_HandleAdcDataRdy()
 {
 	uint16_t data = adc_GetRawData();
-	char buf[16];
-	PUtil_Uint16ToAscii(data, buf, sizeof(buf));
-
-	uart_QueueTxStrIE(IO_UART_PC_TX, buf);
-	uart_TransmitIE(IO_UART_PC_TX, '\r');
+	PUtil_Uint16ToAscii(data, g_plantieAdcStrValue, sizeof(g_plantieAdcStrValue));
 
 	//TODO: Handle mqtt send to esp-01
+	PLANTIE_FLAGS |= (MQTT_STARTED);
 }
 
 void app_HandlePcRxMsgRdy()
@@ -57,4 +57,33 @@ void app_HandleEspRxMsgRdy()
 	UART_MSG msg = { 0 };
 	uart_GetCompleteRxMsg(IO_UART_ESP_RX, &msg);
 	uart_QueueTxMsgIE(IO_UART_PC_TX, &msg);
+	uart_QueueTxStrIE(IO_UART_PC_TX, "\r");
+
+	if (g_mqtt_ongoing)
+	{
+		mqtt_Process(&msg);
+	}
+}
+
+void app_HandleMqttConnection(void)
+{
+	// if (g_mqtt_ongoing)
+	// {
+	// 	return;
+	// }
+
+	g_mqtt_ongoing = true;
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"90.230.137.237\",1883,1\r\n");
+
+	// uart_TransmitMsgPoll(IO_UART_PC_TX, "AT+CIPSTART=\"TCP\",\"90.230.137.237\",1883,1\r\n");
+	// UART_MSG msg = { 0 };
+	// uart_PollEntireMsg(IO_UART_ESP_RX, &msg);
+
+	// do
+	// {
+	// 	uart_PollEntireMsg(IO_UART_ESP_RX, &msg);
+	// 	uart_TransmitEntireMsg(IO_UART_PC_TX, &msg);
+	// } while (strstr((char*)msg.data, "CONNECT") == NULL);
+
+	// mqtt_Process(&msg);
 }

@@ -4,5 +4,6 @@
 void app_HandleAdcDataRdy(void);
 void app_HandlePcRxMsgRdy(void);
 void app_HandleEspRxMsgRdy(void);
+void app_HandleMqttConnection(void);
 
 #endif // PLANTIE_APP_H

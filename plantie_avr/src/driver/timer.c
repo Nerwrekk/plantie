@@ -15,11 +15,11 @@ ISR(TIMER1_COMPA_vect)
 {
 	seconds++;
 
-	if (seconds == 60)
+	if (seconds == 20)
 	{
 		seconds = 0;
 		minutes++;
-		if (minutes == 60)
+		if (minutes == 1)
 		{
 			minutes = 0;
 			adc_StartConversion();

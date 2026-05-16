@@ -23,13 +23,19 @@ int main(void)
 	sei();
 
 	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
-	uart_QueueTxStrIE(IO_UART_PC_TX, "Ready for input");
+	uart_QueueTxStrIE(IO_UART_PC_TX, "Ready for input\r\n");
 
 	//ADC values
 	//wet == 721
 	//dry == 895
 
 	// ADC_StartConversion();
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPMUX=0\r\n");
+	_delay_ms(300);
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE1\r\n");
+	_delay_ms(300);
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPRECVMODE=1\r\n");
+	// _delay_ms(300);
 
 	for (;;)
 	{
@@ -53,5 +59,39 @@ int main(void)
 
 			app_HandleEspRxMsgRdy();
 		}
+
+		if ((PLANTIE_FLAGS & MQTT_STARTED))
+		{
+			uint8_t sreg = SREG;
+			cli();
+			PLANTIE_FLAGS &= ~(MQTT_STARTED);
+			// Plantie_ClearFlag(MQTT_STARTED);
+
+			uart_TransmitMsgPoll(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
+
+			uart_EmptyBufferPoll(IO_UART_ESP_RX);
+
+			SREG = sreg;
+			_delay_ms(300);
+			app_HandleMqttConnection();
+
+			// uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
+
+			// SREG = sreg;
+		}
+
+		// if ((PLANTIE_FLAGS & MQTT_FINISHED))
+		// {
+		// 	uint8_t sreg = SREG;
+		// 	cli();
+		// 	PLANTIE_FLAGS &= ~(MQTT_FINISHED);
+		// 	g_mqtt_ongoing = false;
+
+		// 	uart_TransmitMsgPoll(IO_UART_PC_TX, "MQTT_FINISHED\r\n");
+
+		// 	uart_TransmitMsgPoll(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
+
+		// 	SREG = sreg;
+		// }
 	}
 }
