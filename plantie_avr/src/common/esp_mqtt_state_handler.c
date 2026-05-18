@@ -48,10 +48,11 @@ static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
 		0x30, //left nibble: MQTT Control Packet type: publish, right nibble: DUP, QoS level and retain flags
 		0x10, //remaining length
 
-		0x00, 0x0B, // topic length = 11
+		0x00, 0x0B, // mqtt topic, length = 11
 
 		'p', 'l', 'a', 'n', 't', 'i', 'e', '/', 'a', 'd', 'c',
 
+		//payload
 		g_plantieAdcStrValue[0], g_plantieAdcStrValue[1], g_plantieAdcStrValue[2]
 	};
 
@@ -123,10 +124,6 @@ void mqtt_Process(UART_MSG* msg)
 	if (strstr((char*)msg->data, "CLOSED") != NULL)
 	{
 		handler.state = MQTT_DONE;
-
-		mqtt_DoneIE(msg);
-
-		return;
 	}
 
 	switch (handler.state)
