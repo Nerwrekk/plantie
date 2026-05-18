@@ -72,26 +72,10 @@ int main(void)
 			uart_EmptyBufferPoll(IO_UART_ESP_RX);
 
 			SREG = sreg;
+
 			_delay_ms(300);
+
 			app_HandleMqttConnection();
-
-			// uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
-
-			// SREG = sreg;
 		}
-
-		// if ((PLANTIE_FLAGS & MQTT_FINISHED))
-		// {
-		// 	uint8_t sreg = SREG;
-		// 	cli();
-		// 	PLANTIE_FLAGS &= ~(MQTT_FINISHED);
-		// 	g_mqtt_ongoing = false;
-
-		// 	uart_TransmitMsgPoll(IO_UART_PC_TX, "MQTT_FINISHED\r\n");
-
-		// 	uart_TransmitMsgPoll(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
-
-		// 	SREG = sreg;
-		// }
 	}
 }

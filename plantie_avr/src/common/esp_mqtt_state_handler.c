@@ -31,7 +31,8 @@ static inline void mqtt_DoneIE(UART_MSG* msg)
 	uart_EmptyBufferIE(IO_UART_ESP_TX);
 	uart_EmptyBufferIE(IO_UART_ESP_RX);
 
-	PLANTIE_FLAGS |= MQTT_FINISHED;
+	// _delay_ms(300);
+	PLANTIE_FLAGS |= MQTT_FINISHED; //investigate, why is this flag needed when it does nothing?
 }
 
 static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
@@ -43,8 +44,9 @@ static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
 		return;
 	}
 
-	uint8_t mqtt_publish_pkt[18] = {
-		0x30, 0x10,
+	uint8_t mqtt_publish_req[18] = {
+		0x30, //left nibble: MQTT Control Packet type: publish, right nibble: DUP, QoS level and retain flags
+		0x10, //remaining length
 
 		0x00, 0x0B, // topic length = 11
 
@@ -54,7 +56,7 @@ static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
 	};
 
 	_delay_ms(30);
-	uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_publish_pkt, sizeof(mqtt_publish_pkt));
+	uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_publish_req, sizeof(mqtt_publish_req));
 
 	if (strstr((char*)msg->data, "SEND OK") != NULL)
 	{
@@ -77,20 +79,22 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 
 		_delay_ms(30);
 
-		uint8_t mqtt_connect_pkt[18] = {
-			0x10, 0x10, // CONNECT, remaining length = 16
+		uint8_t mqtt_connect_req[21] = {
+			0x10, //MQTT Control Packet type: Connect
+			0x13, //remaining length = 19
 
-			0x00, 0x04,
-			0x4D, 0x51, 0x54, 0x54,
+			0x00, 0x04, //Protocol Name
+			'M', 'Q', 'T', 'T',
 
-			0x04,
-			0x02,
-			0x00, 0x3C,
+			0x04, //Protocol Level
+			0x02, //Connect Flags, Clean Session flag set
 
-			0x00, 0x04,
-			0x61, 0x76, 0x72, 0x31
+			0x00, 0x3C, //Keep Alive bytes, currently set to 60 sec
+
+			0x00, 0x07,                       //Payload length
+			'p', 'l', 'a', 'n', 't', 'i', 'e' //Client id
 		};
-		uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_connect_pkt, sizeof(mqtt_connect_pkt));
+		uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_connect_req, sizeof(mqtt_connect_req));
 
 		return;
 	}
@@ -108,7 +112,7 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 	if (strncmp((char*)msg->data, "CONNECT", 7) == 0)
 	{
 		_delay_ms(30);
-		uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSEND=18\r\n");
+		uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSEND=21\r\n");
 
 		return;
 	}
