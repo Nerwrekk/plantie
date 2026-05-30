@@ -8,7 +8,9 @@ endif()
 
 ## AVR Chip Configuration
 # 20Mhz, oscillator,
-set(F_CPU 20000000UL)
+# set(F_CPU 20000000UL)
+# set(F_CPU 11059200UL)
+set(F_CPU 8000000UL)
 # CPU, you can find the list here:
 # https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html
 
@@ -22,11 +24,13 @@ set(MCU atmega644p)
 # The programmer to use, read avrdude manual for list
 set(PROGRAMMER usbasp)
 
+#NOTE: when programming with the usbasp you dont actually need to connect vcc pin
+
 # AVR Fuses, must be in concordance with your hardware and F_CPU
 # http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p
-set(E_FUSE 0xfd)
+set(E_FUSE 0xFF)
 set(H_FUSE 0xD9)
-set(L_FUSE 0xF6)
+set(L_FUSE 0xE2)
 set(LOCK_BIT 0xFF) # This means all lock bits are unprogrammed 
 
 # set(CMAKE_C_FLAGS "-Wall -Os -mmcu=${MCU} ")

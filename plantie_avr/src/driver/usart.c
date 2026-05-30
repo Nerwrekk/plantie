@@ -6,9 +6,10 @@
 #include <avr/interrupt.h>
 #include <stddef.h>
 
-#define BAUDERATE_9600    129u
-#define BAUDERATE_115200  10u
-#define SELECTED_BAUDRATE BAUDERATE_115200
+#define BAUDERATE_9600_8MZH 51u
+#define BAUDERATE_9600      129u
+#define BAUDERATE_115200    10u
+#define SELECTED_BAUDRATE   BAUDERATE_9600_8MZH
 
 #define USART0_BUFFER_SIZE 128
 #define USART1_BUFFER_SIZE 128
