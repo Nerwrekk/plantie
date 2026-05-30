@@ -16,6 +16,24 @@ static inline void Plantie_ClearFlag(uint8_t flag)
 	SREG = sreg; //restore glob interrupts
 }
 
+static inline void ConfigEsp01(void)
+{
+	//ESP-01 configuration
+
+	//Enable/disable Multiple Connections,  0: single connection, 1: multiple connections
+	//TODO: change this if we want to support subscribing to mqtt events
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPMUX=0\r\n");
+	_delay_ms(300);
+
+	//Echoing, ATE0: Switch echo off, ATE1: Switch echo on.
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE0\r\n");
+	_delay_ms(300);
+
+	//Set Socket Receiving Mode, set to 1: passive mode
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPRECVMODE=1\r\n");
+	_delay_ms(300);
+}
+
 int main(void)
 {
 	IO_InitMcu();
@@ -25,17 +43,11 @@ int main(void)
 	IO_SetOutput(IO_ERR_LED, IO_OUTPUT_HIGH);
 	uart_QueueTxStrIE(IO_UART_PC_TX, "Ready for input\r\n");
 
+	ConfigEsp01();
+
 	//ADC values
 	//wet == 721
 	//dry == 895
-
-	// ADC_StartConversion();
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPMUX=0\r\n");
-	_delay_ms(300);
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE0\r\n");
-	_delay_ms(300);
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPRECVMODE=1\r\n");
-	_delay_ms(300);
 
 	for (;;)
 	{

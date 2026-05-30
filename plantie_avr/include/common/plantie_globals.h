@@ -8,7 +8,6 @@
 #define ESP_RX_MSG_RDY 0x2u
 #define MQTT_START     0x4u
 #define PC_RX_MSG_RDY  0x8u
-#define MQTT_FINISHED  0x16u
 
 extern volatile uint8_t PLANTIE_FLAGS;
 

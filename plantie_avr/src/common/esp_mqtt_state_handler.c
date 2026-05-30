@@ -10,7 +10,7 @@
 typedef enum
 {
 	MQTT_CONNECTING_CLIENT,
-	MQTT_CLIENT_CONNECTED,
+	MQTT_SENDING,
 	MQTT_DONE
 } MQTT_STATE;
 
@@ -35,7 +35,7 @@ static inline void mqtt_DoneIE(UART_MSG* msg)
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
 }
 
-static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
+static inline void mqtt_SendingIE(UART_MSG* msg)
 {
 	if (strstr((char*)msg->data, "ERROR") != NULL)
 	{
@@ -84,9 +84,8 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 
 	if (strstr((char*)msg->data, "+IPD,4") != NULL)
 	{
-		handler.state = MQTT_CLIENT_CONNECTED;
+		handler.state = MQTT_SENDING;
 
-		_delay_ms(30);
 		uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSEND=18\r\n");
 
 		return;
@@ -94,7 +93,6 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 
 	if (strncmp((char*)msg->data, "CONNECT", 7) == 0)
 	{
-		_delay_ms(30);
 		uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSEND=21\r\n");
 
 		return;
@@ -102,8 +100,6 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 
 	if (strstr((char*)msg->data, ">") != NULL)
 	{
-		// _delay_ms(30);
-
 		uint8_t mqtt_connect_req[21] = {
 			0x10, //MQTT Control Packet type: Connect
 			0x13, //remaining length = 19
@@ -134,7 +130,7 @@ void mqtt_Process(UART_MSG* msg)
 
 	if (strstr((char*)msg->data, "ALREADY") != NULL)
 	{
-		handler.state = MQTT_CLIENT_CONNECTED;
+		handler.state = MQTT_SENDING;
 	}
 
 	switch (handler.state)
@@ -143,8 +139,8 @@ void mqtt_Process(UART_MSG* msg)
 		mqtt_ConnectClientIE(msg);
 		break;
 
-	case MQTT_CLIENT_CONNECTED:
-		mqtt_ClientConnectedIE(msg);
+	case MQTT_SENDING:
+		mqtt_SendingIE(msg);
 		break;
 
 	case MQTT_DONE:
