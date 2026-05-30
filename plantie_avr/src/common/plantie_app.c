@@ -19,7 +19,7 @@ void app_HandleAdcDataRdy()
 	PUtil_Uint16ToAscii(data, g_plantieAdcStrValue, sizeof(g_plantieAdcStrValue));
 
 	//TODO: Handle mqtt send to esp-01
-	PLANTIE_FLAGS |= (MQTT_STARTED);
+	PLANTIE_FLAGS |= (MQTT_START);
 }
 
 void app_HandlePcRxMsgRdy()
@@ -74,7 +74,7 @@ void app_HandleMqttConnection(void)
 
 	g_mqtt_ongoing = true;
 	//TODO: store ip address in EEPROM
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"78.71.231.17\",1883,1\r\n");
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"217.208.171.171\",1883,1\r\n");
 
 	// uart_TransmitMsgPoll(IO_UART_PC_TX, "AT+CIPSTART=\"TCP\",\"90.230.137.237\",1883,1\r\n");
 	// UART_MSG msg = { 0 };

@@ -32,10 +32,10 @@ int main(void)
 	// ADC_StartConversion();
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPMUX=0\r\n");
 	_delay_ms(300);
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE1\r\n");
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE0\r\n");
 	_delay_ms(300);
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPRECVMODE=1\r\n");
-	// _delay_ms(300);
+	_delay_ms(300);
 
 	for (;;)
 	{
@@ -60,20 +60,9 @@ int main(void)
 			app_HandleEspRxMsgRdy();
 		}
 
-		if ((PLANTIE_FLAGS & MQTT_STARTED))
+		if ((PLANTIE_FLAGS & MQTT_START))
 		{
-			uint8_t sreg = SREG;
-			cli();
-			PLANTIE_FLAGS &= ~(MQTT_STARTED);
-			// Plantie_ClearFlag(MQTT_STARTED);
-
-			uart_TransmitMsgPoll(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
-
-			uart_EmptyBufferPoll(IO_UART_ESP_RX);
-
-			SREG = sreg;
-
-			_delay_ms(300);
+			Plantie_ClearFlag(MQTT_START);
 
 			app_HandleMqttConnection();
 		}

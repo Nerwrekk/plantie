@@ -6,7 +6,7 @@
 
 #define ADC_DATA_RDY   0x01u
 #define ESP_RX_MSG_RDY 0x2u
-#define MQTT_STARTED   0x4u
+#define MQTT_START     0x4u
 #define PC_RX_MSG_RDY  0x8u
 #define MQTT_FINISHED  0x16u
 

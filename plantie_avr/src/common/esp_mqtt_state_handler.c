@@ -31,8 +31,8 @@ static inline void mqtt_DoneIE(UART_MSG* msg)
 	uart_EmptyBufferIE(IO_UART_ESP_TX);
 	uart_EmptyBufferIE(IO_UART_ESP_RX);
 
-	// _delay_ms(300);
-	PLANTIE_FLAGS |= MQTT_FINISHED; //investigate, why is this flag needed when it does nothing?
+	uart_QueueTxStrIE(IO_UART_PC_TX, "MQTT DONE\r\n");
+	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPCLOSE\r\n");
 }
 
 static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
@@ -40,6 +40,17 @@ static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
 	if (strstr((char*)msg->data, "ERROR") != NULL)
 	{
 		handler.state = MQTT_DONE;
+
+		mqtt_DoneIE(msg);
+
+		return;
+	}
+
+	if (strstr((char*)msg->data, "SEND OK") != NULL)
+	{
+		handler.state = MQTT_DONE;
+
+		mqtt_DoneIE(msg);
 
 		return;
 	}
@@ -58,11 +69,6 @@ static inline void mqtt_ClientConnectedIE(UART_MSG* msg)
 
 	_delay_ms(30);
 	uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_publish_req, sizeof(mqtt_publish_req));
-
-	if (strstr((char*)msg->data, "SEND OK") != NULL)
-	{
-		handler.state = MQTT_DONE;
-	}
 }
 
 static inline void mqtt_ConnectClientIE(UART_MSG* msg)
@@ -71,31 +77,7 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 	{
 		handler.state = MQTT_DONE;
 
-		return;
-	}
-
-	if (strstr((char*)msg->data, ">") != NULL)
-	{
-		uart_QueueTxStrIE(IO_UART_PC_TX, "connection ready\r\n");
-
-		_delay_ms(30);
-
-		uint8_t mqtt_connect_req[21] = {
-			0x10, //MQTT Control Packet type: Connect
-			0x13, //remaining length = 19
-
-			0x00, 0x04, //Protocol Name
-			'M', 'Q', 'T', 'T',
-
-			0x04, //Protocol Level
-			0x02, //Connect Flags, Clean Session flag set
-
-			0x00, 0x3C, //Keep Alive bytes, currently set to 60 sec
-
-			0x00, 0x07,                       //Payload length
-			'p', 'l', 'a', 'n', 't', 'i', 'e' //Client id
-		};
-		uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_connect_req, sizeof(mqtt_connect_req));
+		mqtt_DoneIE(msg);
 
 		return;
 	}
@@ -117,6 +99,30 @@ static inline void mqtt_ConnectClientIE(UART_MSG* msg)
 
 		return;
 	}
+
+	if (strstr((char*)msg->data, ">") != NULL)
+	{
+		// _delay_ms(30);
+
+		uint8_t mqtt_connect_req[21] = {
+			0x10, //MQTT Control Packet type: Connect
+			0x13, //remaining length = 19
+
+			0x00, 0x04, //Protocol Name
+			'M', 'Q', 'T', 'T',
+
+			0x04, //Protocol Level
+			0x02, //Connect Flags, Clean Session flag set
+
+			0x00, 0x3C, //Keep Alive bytes, currently set to 60 sec
+
+			0x00, 0x07,                       //Payload length
+			'p', 'l', 'a', 'n', 't', 'i', 'e' //Client id
+		};
+		uart_QueueTxBinIE(IO_UART_ESP_TX, mqtt_connect_req, sizeof(mqtt_connect_req));
+
+		return;
+	}
 }
 
 void mqtt_Process(UART_MSG* msg)
@@ -124,6 +130,11 @@ void mqtt_Process(UART_MSG* msg)
 	if (strstr((char*)msg->data, "CLOSED") != NULL)
 	{
 		handler.state = MQTT_DONE;
+	}
+
+	if (strstr((char*)msg->data, "ALREADY") != NULL)
+	{
+		handler.state = MQTT_CLIENT_CONNECTED;
 	}
 
 	switch (handler.state)
