@@ -32,7 +32,7 @@ void app_HandlePcRxMsgRdy()
 
 	UART_MSG msg = { 0 };
 	uart_GetCompleteRxMsg(IO_UART_PC_RX, &msg);
-	uart_QueueTxMsgIE(IO_UART_PC_TX, &msg);
+	uart_QueueTxMsgIE(IO_UART_PC_TX, &msg); //echo message
 
 	if (strncmp((char*)msg.data, "AT", 2) == 0)
 	{
@@ -45,7 +45,7 @@ void app_HandlePcRxMsgRdy()
 	{
 		memset(ipAddress, 0, sizeof(ipAddress));
 		ipSize = 0;
-		//length of SET_IPV4=\" is 10 if you diregard the null termanation
+		//length of SET_IPV4=\" is 10 if you disregard null termination
 		char* p        = (char*)&msg.data[10];
 		uint8_t ipIndx = 0;
 		while (*p != '\"' && *p != '\r')
@@ -96,12 +96,16 @@ void app_HandleMqttConnection(void)
 {
 	g_mqtt_ongoing       = true;
 	char subMsgStart[19] = "AT+CIPSTART=\"TCP\",\"";
-	//ip addres between
+	//ip address between
 	char subMsgEnd[10] = "\",1883,1\r\n";
 
+	//size calculated using size of: subMsgStart, ipAddress and subMsgEnd
 	char connectCmd[44] = { 0 };
+	//copy first sub message
 	strncpy(connectCmd, subMsgStart, sizeof(subMsgStart));
+	//copy ip address at the end of first sub message, using ipSize as the size of ip address can vary
 	strncpy(connectCmd + sizeof(subMsgStart), ipAddress, ipSize);
+	//copy last sub message at the end of ip address
 	strncpy(connectCmd + (sizeof(subMsgStart) + ipSize), subMsgEnd, sizeof(subMsgEnd));
 	connectCmd[43] = '\0';
 
