@@ -14,15 +14,14 @@
 #include <stdbool.h>
 
 //TODO: load in the correct ip address from eeprom
-static char ipAddress[15] = "255.255.255.255";
-static uint8_t ipSize     = sizeof(ipAddress); //does not have null termanation
+static char ipAddress[15] = "255.255.255.255"; //does not have null termination
+static uint8_t ipSize     = sizeof(ipAddress);
 
 void app_HandleAdcDataRdy()
 {
 	uint16_t data = adc_GetRawData();
 	PUtil_Uint16ToAscii(data, g_plantieAdcStrValue, sizeof(g_plantieAdcStrValue));
 
-	//TODO: Handle mqtt send to esp-01
 	PLANTIE_FLAGS |= (MQTT_START);
 }
 
@@ -45,7 +44,7 @@ void app_HandlePcRxMsgRdy()
 	{
 		memset(ipAddress, 0, sizeof(ipAddress));
 		ipSize = 0;
-		//length of SET_IPV4=\" is 10 if you disregard null termination
+		//length of 'SET_IPV4=\"' is 10 if you disregard null termination
 		char* p        = (char*)&msg.data[10];
 		uint8_t ipIndx = 0;
 		while (*p != '\"' && *p != '\r')
@@ -110,6 +109,4 @@ void app_HandleMqttConnection(void)
 	connectCmd[43] = '\0';
 
 	uart_QueueTxStrIE(IO_UART_ESP_TX, connectCmd);
-	//TODO: store ip address in EEPROM
-	// uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"81.237.219.29\",1883,1\r\n");
 }
