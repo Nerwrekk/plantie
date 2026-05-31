@@ -22,16 +22,16 @@ static inline void ConfigEsp01(void)
 
 	//Enable/disable Multiple Connections,  0: single connection, 1: multiple connections
 	//TODO: change this if we want to support subscribing to mqtt events
+	_delay_ms(30);
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPMUX=0\r\n");
-	_delay_ms(300);
 
 	//Echoing, ATE0: Switch echo off, ATE1: Switch echo on.
+	_delay_ms(30);
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "ATE0\r\n");
-	_delay_ms(300);
 
 	//Set Socket Receiving Mode, set to 1: passive mode
+	_delay_ms(30);
 	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPRECVMODE=1\r\n");
-	_delay_ms(300);
 }
 
 int main(void)

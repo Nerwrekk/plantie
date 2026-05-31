@@ -28,9 +28,9 @@ set(PROGRAMMER usbasp)
 
 # AVR Fuses, must be in concordance with your hardware and F_CPU
 # http://eleccelerator.com/fusecalc/fusecalc.php?chip=atmega328p
-set(E_FUSE 0xFF)
+set(E_FUSE 0xFE)
 set(H_FUSE 0xD9)
-set(L_FUSE 0xE2)
+set(L_FUSE 0xFF)
 set(LOCK_BIT 0xFF) # This means all lock bits are unprogrammed 
 
 # set(CMAKE_C_FLAGS "-Wall -Os -mmcu=${MCU} ")
