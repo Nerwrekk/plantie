@@ -13,6 +13,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+//TODO: load in the correct ip address from eeprom
+static char ipAddress[15] = "255.255.255.255";
+static uint8_t ipSize     = sizeof(ipAddress); //does not have null termanation
+
 void app_HandleAdcDataRdy()
 {
 	uint16_t data = adc_GetRawData();
@@ -33,6 +37,29 @@ void app_HandlePcRxMsgRdy()
 	if (strncmp((char*)msg.data, "AT", 2) == 0)
 	{
 		uart_QueueTxMsgIE(IO_UART_ESP_TX, &msg);
+
+		return;
+	}
+
+	if (strstr((char*)msg.data, "SET_IPV4=\"") != NULL)
+	{
+		memset(ipAddress, 0, sizeof(ipAddress));
+		ipSize = 0;
+		//length of SET_IPV4=\" is 10 if you diregard the null termanation
+		char* p        = (char*)&msg.data[10];
+		uint8_t ipIndx = 0;
+		while (*p != '\"' && *p != '\r')
+		{
+			ipAddress[ipIndx] = *p;
+			ipIndx++;
+			p++;
+		}
+
+		ipSize = ipIndx;
+
+		uart_QueueTxStrIE(IO_UART_PC_TX, "New IP address set: ");
+		uart_QueueTxBinIE(IO_UART_PC_TX, (uint8_t*)ipAddress, ipSize);
+		uart_QueueTxStrIE(IO_UART_PC_TX, "\r\n");
 
 		return;
 	}
@@ -67,24 +94,18 @@ void app_HandleEspRxMsgRdy()
 
 void app_HandleMqttConnection(void)
 {
-	// if (g_mqtt_ongoing)
-	// {
-	// 	return;
-	// }
+	g_mqtt_ongoing       = true;
+	char subMsgStart[19] = "AT+CIPSTART=\"TCP\",\"";
+	//ip addres between
+	char subMsgEnd[10] = "\",1883,1\r\n";
 
-	g_mqtt_ongoing = true;
+	char connectCmd[44] = { 0 };
+	strncpy(connectCmd, subMsgStart, sizeof(subMsgStart));
+	strncpy(connectCmd + sizeof(subMsgStart), ipAddress, ipSize);
+	strncpy(connectCmd + (sizeof(subMsgStart) + ipSize), subMsgEnd, sizeof(subMsgEnd));
+	connectCmd[43] = '\0';
+
+	uart_QueueTxStrIE(IO_UART_ESP_TX, connectCmd);
 	//TODO: store ip address in EEPROM
-	uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"217.208.171.171\",1883,1\r\n");
-
-	// uart_TransmitMsgPoll(IO_UART_PC_TX, "AT+CIPSTART=\"TCP\",\"90.230.137.237\",1883,1\r\n");
-	// UART_MSG msg = { 0 };
-	// uart_PollEntireMsg(IO_UART_ESP_RX, &msg);
-
-	// do
-	// {
-	// 	uart_PollEntireMsg(IO_UART_ESP_RX, &msg);
-	// 	uart_TransmitEntireMsg(IO_UART_PC_TX, &msg);
-	// } while (strstr((char*)msg.data, "CONNECT") == NULL);
-
-	// mqtt_Process(&msg);
+	// uart_QueueTxStrIE(IO_UART_ESP_TX, "AT+CIPSTART=\"TCP\",\"81.237.219.29\",1883,1\r\n");
 }
